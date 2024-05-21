@@ -57,6 +57,41 @@ const updateBook = async (req, res, next) => {
     return res.status(500).json({ message: 'Error updating book', error })
   }
 }
+
+const deleteAuthorFromBook = async (req, res, next) => {
+  try {
+    const { bookId, authorId } = req.params
+
+    if (
+      !mongoose.Types.ObjectId.isValid(bookId) ||
+      !mongoose.Types.ObjectId.isValid(authorId)
+    ) {
+      return res.status(400).json({ message: 'Invalid book ID or author ID' })
+    }
+
+    const updatedBook = await Libro.findByIdAndUpdate(
+      bookId,
+      { $pull: { name_author: authorId } },
+      { new: true }
+    )
+
+    if (!updatedBook) {
+      return res.status(404).json({ message: 'Book not found' })
+    }
+
+    return res.status(200).json({
+      message: 'Author removed from book successfully',
+      element: updatedBook
+    })
+  } catch (error) {
+    console.log(error)
+    console.error('Error removing author from book:', error)
+    return res
+      .status(500)
+      .json({ message: 'Error removing author from book', error })
+  }
+}
+
 const deletebook = async (req, res, next) => {
   try {
     const { id } = req.params
@@ -69,4 +104,10 @@ const deletebook = async (req, res, next) => {
     return res.status(400).json('error')
   }
 }
-module.exports = { getbook, postbook, updateBook, deletebook }
+module.exports = {
+  getbook,
+  postbook,
+  updateBook,
+  deleteAuthorFromBook,
+  deletebook
+}
